@@ -1,217 +1,159 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import dynamic from "next/dynamic";
+import { useState } from "react";
 import { 
-  Activity, 
-  Droplets, 
-  Sun, 
-  AlertTriangle, 
-  ShieldCheck, 
-  Satellite, 
-  CheckCircle2, 
-  Zap,
-  Thermometer,
-  Cpu,
-  Radio,
-  Signal,
-  Database,
-  Terminal,
-  ChevronRight,
-  Globe,
-  PieChart
+  FileText, ShieldAlert, BadgeIndianRupee, MapPin, Search, Check, X, RefreshCw, Send 
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
-import { Badge } from "@/components/ui/badge";
 
-const ParcelMap = dynamic(() => import('@/components/maps/ParcelMap'), { ssr: false });
-
-// Mock data for initial state
-const INITIAL_SENSORS = {
-  temp: 30.90,
-  humidity: 63.50,
-  soilValue: 4095,
-  soilStatus: "DRY",
-  ledStatus: "RED LED ON",
-  npk: { n: 34, p: 34, k: 34 },
-  gps: { status: "Connecting to satellite...", signal: 0, lastSync: "N/A" }
-};
-
-const TELEMETRY_LOGS = [
-  { time: "14:21:03", msg: "Insurance risk node: Drought trigger", type: "error" },
-  { time: "14:21:05", msg: "Automated loss verification active", type: "warning" },
-  { time: "14:21:08", msg: "Policy cluster GPS sync", type: "info" },
-  { time: "14:21:10", msg: "NPK deficit payout authorized", type: "success" },
+const CLAIMS = [
+  { id: "CLM-2045", farmer: "Ramesh / Green Valley", alert: "Flood Risk Detected", evidence: "Drone + NDVI Data", status: "Pending" },
+  { id: "CLM-2046", farmer: "Suresh / Sunrise Acres", alert: "Soil Damage", evidence: "Sensor Evidence", status: "Pending" },
+  { id: "CLM-2047", farmer: "Mahesh / Golden Harvest", alert: "Heat Stress", evidence: "GIS Analytics", status: "Pending" },
+  { id: "CLM-2048", farmer: "Kiran / RiverSide Farms", alert: "Crop Failure", evidence: "Drone Imagery", status: "Pending" },
+  { id: "CLM-2049", farmer: "Arjun / EcoField Lands", alert: "Drought Alert", evidence: "Satellite Evidence", status: "Pending" },
 ];
 
 export default function InsuranceDashboard() {
-  const [sensors, setSensors] = useState(INITIAL_SENSORS);
-  const [logs, setLogs] = useState(TELEMETRY_LOGS);
-
-  // Simulate realtime updates
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setSensors(prev => ({
-        ...prev,
-        temp: +(prev.temp + (Math.random() - 0.5) * 0.1).toFixed(2),
-        humidity: +(prev.humidity + (Math.random() - 0.5) * 0.2).toFixed(2),
-      }));
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
+  const [selectedClaim, setSelectedClaim] = useState<any>(null);
 
   return (
     <div className="space-y-12 max-w-[1600px] mx-auto stagger-in">
-      
-      {/* Strategic Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
         <div className="space-y-3">
           <div className="flex items-center gap-3">
             <div className="w-2 h-8 bg-rose-500 rounded-full shadow-[0_0_15px_rgba(244,63,94,0.5)]" />
-            <p className="text-[11px] font-black uppercase tracking-[0.4em] text-rose-500">Actuarial Node: SEC-AH-001</p>
+            <p className="text-[11px] font-black uppercase tracking-[0.4em] text-rose-500">Indemnity Protocol</p>
           </div>
-          <h1 className="text-7xl font-manrope font-extrabold tracking-tighter text-foreground leading-[0.8]">
-            Loss <span className="text-rose-500">Risk Terminal</span>
+          <h1 className="text-5xl font-manrope font-extrabold tracking-tighter text-foreground">
+            Risk <span className="text-rose-500">Management</span>
           </h1>
           <p className="text-lg text-text-soft font-medium max-w-xl">
-             Real-time IoT loss triggers and automated actuarial monitoring.
+             Real-time claims intelligence and verification command center.
           </p>
         </div>
+      </div>
 
-        <div className="flex gap-4">
-           <Button className="h-16 px-10 bg-rose-500 text-white rounded-2xl font-bold uppercase tracking-widest text-[11px] shadow-2xl shadow-rose-500/20 hover:scale-105 transition-all flex items-center gap-4">
-              <PieChart size={20} /> Run Loss Model
-           </Button>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <KPICard label="Total Policy Volume" value="₹ 48.5 Cr" icon={BadgeIndianRupee} color="text-rose-500" />
+        <KPICard label="Pending Claims" value="126 Claims" icon={FileText} color="text-amber-500" pulsing />
+        <KPICard label="Reserve Funds" value="₹ 12.8 Cr" icon={ShieldAlert} color="text-emerald-500" />
+        <KPICard label="Active Risk Zones" value="18 Zones" icon={MapPin} color="text-indigo-500" />
+      </div>
+
+      <div className="space-y-6">
+        <h3 className="text-[12px] font-black uppercase tracking-[0.4em] text-foreground">Claim Settlement Loop</h3>
+        <div className="premium-card overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-surface-soft/50 border-b border-border/50">
+                  <th className="p-6 text-[11px] font-black uppercase tracking-widest text-text-soft">Claim ID</th>
+                  <th className="p-6 text-[11px] font-black uppercase tracking-widest text-text-soft">Farmer & Parcel</th>
+                  <th className="p-6 text-[11px] font-black uppercase tracking-widest text-text-soft">Alert Context</th>
+                  <th className="p-6 text-[11px] font-black uppercase tracking-widest text-text-soft">Loss Evidence</th>
+                  <th className="p-6 text-[11px] font-black uppercase tracking-widest text-text-soft text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/50">
+                {CLAIMS.map((claim) => (
+                  <tr key={claim.id} className="hover:bg-surface-soft/30 transition-colors">
+                    <td className="p-6 font-jetbrains font-bold text-foreground">{claim.id}</td>
+                    <td className="p-6 font-bold text-text-soft">{claim.farmer}</td>
+                    <td className="p-6">
+                      <span className="px-3 py-1 bg-rose-500/10 text-rose-600 font-bold text-xs rounded-full">{claim.alert}</span>
+                    </td>
+                    <td className="p-6 font-medium text-text-soft">{claim.evidence}</td>
+                    <td className="p-6 flex justify-end gap-3">
+                      <Button onClick={() => setSelectedClaim(claim)} className="bg-rose-50 hover:bg-rose-100 text-rose-500 font-bold rounded-xl gap-2">
+                        <Search size={16} /> Review
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
-      {/* Primary Telemetry KPIs */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
-         <SensorKPICard label="Trigger Temp" value={`${sensors.temp}°C`} icon={Thermometer} color="text-rose-500" bg="bg-white" />
-         <SensorKPICard label="Ambient Humidity" value={`${sensors.humidity}%`} icon={Droplets} color="text-blue-500" bg="bg-white" />
-         <SensorKPICard label="Risk Value" value={sensors.soilValue} icon={Cpu} color="text-amber-600" bg="bg-white" sub="IoT Threshold" />
-         <SensorKPICard label="Claim Trigger" value={sensors.soilStatus} icon={AlertTriangle} color="text-rose-500" bg="bg-white" pulsing={true} />
-         <SensorKPICard label="Auth Protocol" value={sensors.ledStatus} icon={ShieldCheck} color="text-rose-500" bg="bg-white" glowing={true} />
-      </div>
-
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-10">
-         <div className="xl:col-span-8 space-y-10">
-            {/* NPK Intelligence */}
-            <div className="space-y-6">
-               <h2 className="text-[12px] font-black tracking-[0.4em] text-foreground uppercase">Insured Zone NPK Scans</h2>
-               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                  <NPKCard label="Nitrogen Payout" value={sensors.npk.n} status="Stable" color="text-emerald-500" />
-                  <NPKCard label="Phosphorus Risk" value={sensors.npk.p} status="Optimal" color="text-blue-500" />
-                  <NPKCard label="Potassium Deficit" value={sensors.npk.k} status="Loss Trigger" color="text-rose-500" />
-               </div>
-            </div>
-
-            {/* Map */}
-            <div className="relative h-[500px] rounded-[32px] overflow-hidden bg-white border border-[#EEF2EE] shadow-soft group">
-               <ParcelMap parcels={[{ id: 1, name: "Insured Policy Zone", area_ha: 4.2, crop: "Standard", health: "85%", lat: 19.4, lng: 79.98 }]} height="100%" />
-            </div>
-         </div>
-
-         <div className="xl:col-span-4 flex flex-col gap-10">
-            {/* GPS Status */}
-            <div className="premium-card p-10 space-y-8">
-               <div className="flex items-center justify-between">
-                  <h3 className="text-[12px] font-black tracking-[0.4em] text-foreground uppercase">Policy GPS Sync</h3>
-                  <Globe size={20} className="text-rose-500" />
-               </div>
-                     <div className="flex items-center gap-5 overflow-hidden">
-                        <div className="relative shrink-0">
-                           <div className="w-12 h-12 rounded-full bg-rose-500/10 border border-rose-500/20 flex items-center justify-center relative">
-                              <Satellite size={20} className="text-rose-500" />
-                           </div>
-                           <div className="absolute -inset-1 border-2 border-rose-500/20 rounded-full animate-ping" />
-                        </div>
-                        <div className="min-w-0">
-                           <p className="text-[8px] font-black text-text-soft uppercase tracking-widest leading-none mb-1 opacity-40">Policy Uplink</p>
-                           <h4 className="text-base font-manrope font-extrabold text-foreground tracking-tight truncate">{sensors.gps.status}</h4>
+      {selectedClaim && (
+         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" onClick={() => setSelectedClaim(null)}>
+            <div className="bg-white rounded-[32px] w-full max-w-5xl p-10 relative overflow-hidden max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+               <div className="absolute top-0 left-0 w-full h-2 bg-rose-500" />
+               <button onClick={() => setSelectedClaim(null)} className="absolute top-6 right-6 p-2 rounded-full hover:bg-surface-soft">
+                  <X size={20} />
+               </button>
+               
+               <h2 className="text-3xl font-manrope font-extrabold mb-2">Claim Details: {selectedClaim.id}</h2>
+               <p className="text-text-soft font-bold mb-8">{selectedClaim.farmer}</p>
+               
+               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  <div className="space-y-6">
+                     <div>
+                        <h4 className="text-sm font-black uppercase tracking-widest text-text-soft mb-2">Loss Evidence Visuals</h4>
+                        <div className="h-48 rounded-2xl bg-surface-soft border border-border flex items-center justify-center overflow-hidden relative group">
+                           <img src="https://images.unsplash.com/photo-1595844730298-b960fa31e1fb?auto=format&fit=crop&q=80&w=800" className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform" />
+                           <span className="relative z-10 bg-white/90 px-4 py-2 rounded-full text-xs font-bold shadow-sm">Drone + NDVI Overlay</span>
                         </div>
                      </div>
-            </div>
-
-            {/* Live Console */}
-            <div className="premium-card p-10 flex-1 flex flex-col bg-[#0F172A] border-none text-white overflow-hidden">
-               <div className="flex items-center justify-between mb-8 text-[10px] font-black tracking-[0.3em] uppercase text-white/60">
-                  <div className="flex items-center gap-3">
-                     <Terminal size={16} className="text-rose-400" />
-                     <span>Loss Telemetry Feed</span>
+                     <div className="grid grid-cols-2 gap-4">
+                        <div className="p-4 rounded-xl bg-rose-500/5 border border-rose-500/10"><span className="text-[10px] uppercase font-bold text-rose-500">Estimated Damage</span><p className="font-jetbrains font-bold text-xl text-rose-500">68%</p></div>
+                        <div className="p-4 rounded-xl bg-surface-soft"><span className="text-[10px] uppercase font-bold text-text-soft">Suggested Payout</span><p className="font-jetbrains font-bold text-xl">₹ 1.2 Lakhs</p></div>
+                     </div>
                   </div>
-                  <div className="w-2 h-2 rounded-full bg-rose-400 animate-pulse" />
-               </div>
-               <div className="flex-1 font-jetbrains text-[12px] space-y-4 overflow-y-auto">
-                  {logs.map((log, i) => (
-                     <div key={i} className="flex gap-4 opacity-80">
-                        <span className="text-rose-400/50">[{log.time}]</span>
-                        <span className={log.type === 'error' ? 'text-rose-300' : 'text-rose-200'}>{log.msg}</span>
+                  
+                  <div className="space-y-6">
+                     <div>
+                        <h4 className="text-sm font-black uppercase tracking-widest text-text-soft mb-2">Sensor & GIS Data</h4>
+                        <div className="grid grid-cols-2 gap-4">
+                           <div className="p-4 rounded-xl bg-surface-soft"><span className="text-[10px] uppercase font-bold text-text-soft">GPS</span><p className="font-jetbrains font-bold text-sm">18.5204° N, 73.8567° E</p></div>
+                           <div className="p-4 rounded-xl bg-surface-soft"><span className="text-[10px] uppercase font-bold text-text-soft">Timestamp</span><p className="font-jetbrains font-bold text-sm">09 May 2026, 14:30</p></div>
+                        </div>
                      </div>
-                  ))}
+                     <div>
+                        <h4 className="text-sm font-black uppercase tracking-widest text-text-soft mb-2">Verification Notes</h4>
+                        <p className="text-sm font-medium text-foreground p-4 rounded-xl border border-border bg-white shadow-sm leading-relaxed">
+                           Field officer confirms severe crop failure due to sudden flooding. Satellite imagery aligns with ground sensor water level spikes. Highly recommend swift settlement.
+                        </p>
+                     </div>
+                  </div>
+               </div>
+
+               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-10 pt-10 border-t border-border">
+                  <Button className="bg-emerald-500 text-white font-bold rounded-xl h-12 flex gap-2">
+                     <Check size={16} /> Approve Claim
+                  </Button>
+                  <Button variant="outline" className="text-rose-500 font-bold rounded-xl h-12 flex gap-2 border-rose-200 bg-rose-50 hover:bg-rose-100">
+                     <X size={16} /> Reject Claim
+                  </Button>
+                  <Button variant="outline" className="font-bold rounded-xl h-12 flex gap-2 border-border bg-white text-foreground hover:bg-surface-soft">
+                     <RefreshCw size={16} /> Reverification
+                  </Button>
+                  <Button className="bg-rose-500 text-white font-bold rounded-xl h-12 flex gap-2 hover:bg-rose-600">
+                     <Send size={16} /> Generate Settlement
+                  </Button>
                </div>
             </div>
          </div>
-      </div>
+      )}
     </div>
   );
 }
 
-function SensorKPICard({ label, value, icon: Icon, color, sub, pulsing, glowing }: any) {
-  const isLong = value.toString().length > 8;
+function KPICard({ label, value, icon: Icon, color, pulsing }: any) {
   return (
-    <div className="premium-card p-7 flex flex-col justify-between h-full min-h-[200px]">
-      <div className={`w-10 h-10 rounded-xl bg-surface-soft flex items-center justify-center ${color} border border-border/50 relative shadow-sm`}>
-        <Icon size={18} />
-        {pulsing && <div className="absolute inset-0 border-2 border-current opacity-20 rounded-xl animate-ping" />}
-        {glowing && <div className="absolute inset-0 bg-current opacity-5 blur-xl rounded-xl animate-pulse" />}
-      </div>
-      <div className="space-y-1">
-        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-text-soft opacity-40 leading-none">{label}</p>
-        <div className="flex flex-col gap-0.5">
-           <h3 className={`font-jetbrains font-extrabold tracking-tighter text-foreground leading-tight ${isLong ? 'text-lg' : 'text-2xl'}`}>
-              {value}
-           </h3>
-           {sub && <span className="text-[8px] font-bold text-text-soft uppercase tracking-[0.2em] opacity-30">{sub}</span>}
+    <div className="premium-card p-8 flex flex-col justify-between min-h-[160px]">
+      <div className="flex items-center justify-between mb-4">
+        <div className={`w-12 h-12 rounded-2xl bg-surface-soft flex items-center justify-center ${color} relative`}>
+          <Icon size={20} />
+          {pulsing && <div className="absolute inset-0 border-2 border-current opacity-20 rounded-2xl animate-ping" />}
         </div>
       </div>
+      <div>
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-soft mb-2">{label}</p>
+        <h3 className="font-jetbrains font-extrabold tracking-tighter text-foreground text-3xl">{value}</h3>
+      </div>
     </div>
   );
-}
-
-function NPKCard({ label, value, status, color }: any) {
-   return (
-      <div className="premium-card p-7 flex flex-col justify-between min-h-[180px] group">
-         <div className="flex items-center justify-between">
-            <p className="text-[9px] font-black uppercase tracking-[0.3em] text-text-soft opacity-40">{label}</p>
-            <Database size={16} className={color} />
-         </div>
-         <div className="flex items-center gap-5 mt-3">
-            <div className="relative w-14 h-14 shrink-0">
-               <svg className="w-full h-full -rotate-90">
-                  <circle cx="28" cy="28" r="24" className="stroke-surface-soft fill-none" strokeWidth="5" />
-                  <motion.circle 
-                     initial={{ pathLength: 0 }}
-                     animate={{ pathLength: value / 100 }}
-                     transition={{ duration: 2, ease: "easeOut" }}
-                     cx="28" cy="28" r="24" 
-                     className={`stroke-current fill-none ${color}`} 
-                     strokeWidth="5" 
-                     strokeLinecap="round"
-                  />
-               </svg>
-               <div className="absolute inset-0 flex items-center justify-center font-jetbrains font-bold text-[9px]">
-                  {value}%
-               </div>
-            </div>
-            <div className="min-w-0 flex-1">
-               <p className="text-lg font-jetbrains font-extrabold text-foreground tracking-tight truncate leading-none">
-                  {value}<span className="text-[9px] ml-1 text-text-soft font-bold">mg/kg</span>
-               </p>
-               <p className={`text-[8px] font-black uppercase tracking-widest mt-1.5 ${color}`}>Status: {status}</p>
-            </div>
-         </div>
-      </div>
-   );
 }

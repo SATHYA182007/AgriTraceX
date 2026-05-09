@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Chatbot } from "@/components/Chatbot";
-import { User } from "lucide-react";
+import { User, Users, ShieldAlert } from "lucide-react";
 
 const ROLE_CONFIGS: Record<string, { name: string, color: string, badge: string }> = {
   farmer: { name: "Farmer Node", color: "text-primary", badge: "PRIMARY SECTOR" },
@@ -71,13 +71,53 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="flex-1 overflow-y-auto px-4 py-8 space-y-8">
            <div className="space-y-1">
               <p className="px-4 text-[10px] font-black uppercase tracking-widest text-text-soft mb-4">Intelligence Menu</p>
-              <NavLink href={`/dashboard/${roleKey}`} icon={LayoutDashboard}>Dashboard</NavLink>
-              <NavLink href={`/dashboard/${roleKey}/sensors`} icon={Activity}>Sensor Monitoring</NavLink>
-              <NavLink href={`/dashboard/${roleKey}/npk`} icon={Zap}>NPK Analysis</NavLink>
-              <NavLink href={`/dashboard/${roleKey}/gps`} icon={Globe}>GPS Status</NavLink>
-              <NavLink href={`/dashboard/${roleKey}/alerts`} icon={Bell} badge={unreadAlerts}>Alerts</NavLink>
-              <NavLink href={`/dashboard/${roleKey}/reports`} icon={FileText}>Reports</NavLink>
-              <NavLink href={`/dashboard/${roleKey}/settings`} icon={UserCog}>Settings</NavLink>
+              {roleKey === 'government' ? (
+                 <>
+                    <NavLink href="/dashboard/government" icon={LayoutDashboard}>Dashboard</NavLink>
+                    <NavLink href="/dashboard/government/map" icon={MapIcon}>Realtime Map</NavLink>
+                    <NavLink href="/dashboard/government/verification" icon={ShieldCheck}>Verification</NavLink>
+                    <NavLink href="/dashboard/government/alerts" icon={Bell} badge={unreadAlerts}>System Alerts</NavLink>
+                    <NavLink href="/dashboard/government/analytics" icon={TrendingUp}>Advanced Analytics</NavLink>
+                    <NavLink href="/dashboard/government/settings" icon={UserCog}>Settings</NavLink>
+                 </>
+              ) : roleKey === 'field-officer' ? (
+                 <>
+                    <NavLink href="/dashboard/field-officer" icon={LayoutDashboard}>Dashboard</NavLink>
+                    <NavLink href="/dashboard/field-officer/map" icon={MapIcon}>Realtime Map</NavLink>
+                    <NavLink href="/dashboard/field-officer/verification" icon={ShieldCheck}>Verification</NavLink>
+                    <NavLink href="/dashboard/field-officer/alerts" icon={Bell} badge={unreadAlerts}>System Alerts</NavLink>
+                    <NavLink href="/dashboard/field-officer/certification" icon={FileText}>Certification Center</NavLink>
+                    <NavLink href="/dashboard/field-officer/settings" icon={UserCog}>Settings</NavLink>
+                 </>
+              ) : roleKey === 'insurance' ? (
+                 <>
+                    <NavLink href="/dashboard/insurance" icon={LayoutDashboard}>Dashboard</NavLink>
+                    <NavLink href="/dashboard/insurance/map" icon={MapIcon}>Realtime Map</NavLink>
+                    <NavLink href="/dashboard/insurance/verification" icon={ShieldCheck}>Verification</NavLink>
+                    <NavLink href="/dashboard/insurance/alerts" icon={Bell} badge={unreadAlerts}>System Alerts</NavLink>
+                    <NavLink href="/dashboard/insurance/settings" icon={UserCog}>Settings</NavLink>
+                 </>
+              ) : roleKey === 'admin' ? (
+                 <>
+                    <NavLink href="/dashboard/admin" icon={LayoutDashboard}>Dashboard</NavLink>
+                    <NavLink href="/dashboard/admin/map" icon={MapIcon}>Realtime Map</NavLink>
+                    <NavLink href="/dashboard/admin/users" icon={Users}>User Management</NavLink>
+                    <NavLink href="/dashboard/admin/monitoring" icon={Activity}>System Monitoring</NavLink>
+                    <NavLink href="/dashboard/admin/alerts" icon={ShieldAlert} badge={unreadAlerts}>Alerts Center</NavLink>
+                    <NavLink href="/dashboard/admin/analytics" icon={TrendingUp}>Analytics</NavLink>
+                    <NavLink href="/dashboard/admin/settings" icon={UserCog}>Settings</NavLink>
+                 </>
+              ) : (
+                 <>
+                    <NavLink href={`/dashboard/${roleKey}`} icon={LayoutDashboard}>Dashboard</NavLink>
+                    <NavLink href={`/dashboard/${roleKey}/sensors`} icon={Activity}>Sensor Monitoring</NavLink>
+                    <NavLink href={`/dashboard/${roleKey}/npk`} icon={Zap}>NPK Analysis</NavLink>
+                    <NavLink href={`/dashboard/${roleKey}/gps`} icon={Globe}>GPS Status</NavLink>
+                    <NavLink href={`/dashboard/${roleKey}/alerts`} icon={Bell} badge={unreadAlerts}>Alerts</NavLink>
+                    <NavLink href={`/dashboard/${roleKey}/reports`} icon={FileText}>Reports</NavLink>
+                    <NavLink href={`/dashboard/${roleKey}/settings`} icon={UserCog}>Settings</NavLink>
+                 </>
+              )}
            </div>
 
            <div className="space-y-1 pt-4 border-t border-[#EEF2EE]">

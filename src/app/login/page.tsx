@@ -22,25 +22,44 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
 
 const ROLES = [
-  { id: 'farmer', name: 'Farmer', icon: Sprout, desc: 'IoT Field Node' },
-  { id: 'field-officer', name: 'Field Agent', icon: Globe, desc: 'Telemetry Sync' },
-  { id: 'government', name: 'Strategic', icon: Landmark, desc: 'State Oversight' },
-  { id: 'insurance', name: 'Actuary', icon: ShieldCheck, desc: 'Risk Models' },
-  { id: 'admin', name: 'Super Admin', icon: UserCog, desc: 'SysOps Matrix' },
+  { id: 'farmer', name: 'Farmer', icon: Sprout },
+  { id: 'field-officer', name: 'Analyst', icon: Database },
+  { id: 'government', name: 'Govt Official', icon: Landmark },
+  { id: 'insurance', name: 'Insurance Mgr', icon: ShieldCheck },
+  { id: 'admin', name: 'Platform Admin', icon: UserCog },
 ];
 
 export default function LoginPage() {
   const [selectedRole, setSelectedRole] = useState('farmer');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const router = useRouter();
 
-  const handleLogin = () => {
+  const handleLogin = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!email || !password) {
+       toast.error("Authentication Failed", {
+          description: "Please enter your Email Address and Password."
+       });
+       return;
+    }
     setIsLoggingIn(true);
     setTimeout(() => {
       router.push(`/dashboard/${selectedRole}`);
     }, 1500);
+  };
+
+  const handleDemoLogin = () => {
+     setEmail('demo@agritracex.com');
+     setPassword('secure123');
+     setIsLoggingIn(true);
+     setTimeout(() => {
+        router.push(`/dashboard/${selectedRole}`);
+     }, 1500);
   };
 
   return (
@@ -90,7 +109,7 @@ export default function LoginPage() {
                   <Pill icon={Cpu} text="IoT Monitoring" />
                   <Pill icon={Database} text="NPK Analysis" />
                   <Pill icon={Navigation} text="GPS Tracking" />
-                  <Pill icon={Activity} text="Smart Irrigation" />
+
                   <Pill icon={Zap} text="Realtime Alerts" />
                </div>
             </div>
@@ -123,56 +142,61 @@ export default function LoginPage() {
 
             <div className="space-y-10">
                {/* Role Selector */}
-               <div className="space-y-6">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-text-soft">Select Operational Role</label>
-                  <Tabs value={selectedRole} onValueChange={setSelectedRole} className="w-full">
-                     <TabsList className="w-full h-20 bg-white border border-border p-2 rounded-[24px] gap-2 shadow-soft">
-                        {ROLES.map((role) => (
-                           <TabsTrigger 
-                              key={role.id} 
-                              value={role.id}
-                              className="flex-1 h-full rounded-[18px] data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg shadow-primary/20 transition-all duration-300"
-                           >
-                              <role.icon size={20} />
-                           </TabsTrigger>
-                        ))}
-                     </TabsList>
-                  </Tabs>
-                  <div className="flex items-center justify-between px-2 pt-2">
-                     <span className="text-sm font-black uppercase tracking-widest text-foreground">{ROLES.find(r => r.id === selectedRole)?.name}</span>
-                     <Badge className="bg-primary-light text-primary border-none font-black text-[9px] px-3 py-1 rounded-full uppercase tracking-widest">
-                        {ROLES.find(r => r.id === selectedRole)?.desc}
-                     </Badge>
+               <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                     <label className="text-[10px] font-black uppercase tracking-widest text-text-soft">Select Operational Role</label>
+                  </div>
+                  <div className="flex flex-wrap gap-2.5">
+                     {ROLES.map((role) => (
+                        <button
+                           key={role.id}
+                           onClick={() => setSelectedRole(role.id)}
+                           className={`flex flex-1 min-w-[120px] items-center justify-center gap-2.5 px-4 py-3.5 rounded-2xl border transition-all duration-300 ${
+                              selectedRole === role.id 
+                                 ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20 scale-[1.02]' 
+                                 : 'bg-white text-text-soft border-border hover:bg-surface-soft hover:text-foreground'
+                           }`}
+                        >
+                           <role.icon size={16} className={selectedRole === role.id ? 'opacity-100' : 'opacity-60'} />
+                           <span className="text-[10px] font-black tracking-widest uppercase">
+                              {role.name}
+                           </span>
+                        </button>
+                     ))}
                   </div>
                </div>
 
                {/* Auth Inputs */}
                <div className="space-y-6">
                   <div className="space-y-2">
-                     <label className="text-[10px] font-black uppercase tracking-widest text-text-soft">Intelligence ID</label>
+                     <label className="text-[10px] font-black uppercase tracking-widest text-text-soft">Email Address</label>
                      <div className="relative group">
                         <User className="absolute left-5 top-1/2 -translate-y-1/2 text-text-soft w-5 h-5 group-focus-within:text-primary transition-colors" />
                         <input 
-                           type="text" 
-                           placeholder="Enter your field ID" 
+                           type="email" 
+                           placeholder="name@agritracex.com" 
+                           value={email}
+                           onChange={(e) => setEmail(e.target.value)}
                            className="w-full h-16 bg-white rounded-[20px] border border-border px-14 font-medium focus:border-primary/30 focus:ring-4 focus:ring-primary/5 outline-none transition-all shadow-sm"
                         />
                      </div>
                   </div>
                   <div className="space-y-2">
-                     <label className="text-[10px] font-black uppercase tracking-widest text-text-soft">Secure Passcode</label>
+                     <label className="text-[10px] font-black uppercase tracking-widest text-text-soft">Password</label>
                      <div className="relative group">
                         <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-text-soft w-5 h-5 group-focus-within:text-primary transition-colors" />
                         <input 
                            type="password" 
                            placeholder="••••••••" 
+                           value={password}
+                           onChange={(e) => setPassword(e.target.value)}
                            className="w-full h-16 bg-white rounded-[20px] border border-border px-14 font-medium focus:border-primary/30 focus:ring-4 focus:ring-primary/5 outline-none transition-all shadow-sm"
                         />
                      </div>
                   </div>
                </div>
 
-               <div className="space-y-6">
+               <div className="space-y-4">
                   <Button 
                      onClick={handleLogin}
                      disabled={isLoggingIn}
@@ -190,19 +214,17 @@ export default function LoginPage() {
                      )}
                   </Button>
                   
-                  <div className="flex items-center justify-between pt-2">
-                     <button className="text-xs font-black uppercase tracking-widest text-text-soft hover:text-primary transition-colors">Request Access</button>
-                     <button className="text-xs font-black uppercase tracking-widest text-text-soft hover:text-primary transition-colors">OTP Protocol</button>
-                  </div>
+                  <Button
+                     variant="outline"
+                     onClick={handleDemoLogin}
+                     disabled={isLoggingIn}
+                     className="w-full h-14 bg-white border-2 border-border text-foreground font-bold rounded-[18px] hover:bg-surface-soft transition-all"
+                  >
+                     Demo Login
+                  </Button>
                </div>
             </div>
          </motion.div>
-
-         {/* Security Footer */}
-         <div className="absolute bottom-8 lg:bottom-12 flex items-center gap-4 text-text-soft opacity-60">
-            <ShieldCheck size={18} className="text-primary" />
-            <p className="text-[9px] font-black uppercase tracking-[0.2em] leading-none">Quantum Encryption Matrix Active</p>
-         </div>
       </div>
     </div>
   );

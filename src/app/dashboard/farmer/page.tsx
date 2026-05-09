@@ -44,16 +44,9 @@ const INITIAL_SENSORS = {
   gps: { status: "Connecting to satellite...", signal: 0, lastSync: "N/A" }
 };
 
-const TELEMETRY_LOGS = [
-  { time: "14:21:03", msg: "Soil moisture critical", type: "error" },
-  { time: "14:21:05", msg: "RED LED activated", type: "warning" },
-  { time: "14:21:08", msg: "GPS syncing...", type: "info" },
-  { time: "14:21:10", msg: "NPK values updated", type: "success" },
-];
 
 export default function FarmerDashboard() {
   const [sensors, setSensors] = useState(INITIAL_SENSORS);
-  const [logs, setLogs] = useState(TELEMETRY_LOGS);
 
   // Simulate realtime updates
   useEffect(() => {
@@ -205,37 +198,6 @@ export default function FarmerDashboard() {
                         <span className="text-xs font-jetbrains font-bold text-foreground">32.4 dBHz</span>
                      </div>
                   </div>
-               </div>
-            </div>
-
-            {/* Live Telemetry Console */}
-            <div className="premium-card p-10 flex-1 flex flex-col bg-[#0F172A] border-none text-white overflow-hidden group">
-               <div className="flex items-center justify-between mb-8">
-                  <div className="flex items-center gap-3">
-                     <Terminal size={16} className="text-emerald-500" />
-                     <h3 className="text-[10px] font-black tracking-[0.3em] uppercase text-white/60">Live Console</h3>
-                  </div>
-                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_#10B981]" />
-               </div>
-
-               <div className="flex-1 font-jetbrains text-[12px] space-y-4 overflow-y-auto custom-scrollbar">
-                  {logs.map((log, i) => (
-                     <div key={i} className="flex gap-4 opacity-80 hover:opacity-100 transition-opacity">
-                        <span className="text-emerald-500/50">[{log.time}]</span>
-                        <span className={log.type === 'error' ? 'text-rose-400' : log.type === 'warning' ? 'text-amber-400' : 'text-emerald-400'}>
-                           {log.msg}
-                        </span>
-                     </div>
-                  ))}
-                  <div className="flex gap-4 animate-pulse">
-                     <span className="text-emerald-500/50">[{new Date().toLocaleTimeString([], { hour12: false })}]</span>
-                     <span className="text-emerald-400">Listening for ESP32 packets...</span>
-                  </div>
-               </div>
-
-               <div className="mt-8 pt-6 border-t border-white/10 flex items-center justify-between">
-                  <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Protocol: ESP-NOW / MQTT</p>
-                  <ChevronRight size={14} className="text-white/20" />
                </div>
             </div>
          </div>

@@ -1,220 +1,129 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import dynamic from "next/dynamic";
+import { Users, Server, Activity, Globe, Database, ShieldCheck } from "lucide-react";
 import { 
-  Activity, 
-  Droplets, 
-  Sun, 
-  AlertTriangle, 
-  Database, 
-  Satellite, 
-  CheckCircle2, 
-  Zap,
-  Thermometer,
-  Cpu,
-  Radio,
-  Signal,
-  Terminal,
-  ChevronRight,
-  Globe,
-  Settings,
-  ShieldCheck
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
-import { Badge } from "@/components/ui/badge";
+  AreaChart, Area, XAxis, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell 
+} from "recharts";
 
-const ParcelMap = dynamic(() => import('@/components/maps/ParcelMap'), { ssr: false });
+const GROWTH_TREND = [
+  { month: "Jan", users: 4000, sessions: 2400 },
+  { month: "Feb", users: 5000, sessions: 3398 },
+  { month: "Mar", users: 6500, sessions: 4800 },
+  { month: "Apr", users: 8200, sessions: 6908 },
+  { month: "May", users: 10500, sessions: 8500 },
+  { month: "Jun", users: 12458, sessions: 11200 },
+];
 
-// Mock data for initial state
-const INITIAL_SENSORS = {
-  temp: 30.90,
-  humidity: 63.50,
-  soilValue: 4095,
-  soilStatus: "DRY",
-  ledStatus: "RED LED ON",
-  npk: { n: 34, p: 34, k: 34 },
-  gps: { status: "Connecting to satellite...", signal: 0, lastSync: "N/A" }
-};
-
-const TELEMETRY_LOGS = [
-  { time: "14:21:03", msg: "SysAdmin: Global IoT cluster online", type: "success" },
-  { time: "14:21:05", msg: "Edge gateway latency optimized (14ms)", type: "info" },
-  { time: "14:21:08", msg: "ESP32 firmware handshake active", type: "warning" },
-  { time: "14:21:10", msg: "Realtime data fusion protocol enabled", type: "success" },
+const LOAD_DATA = [
+  { time: "00:00", api: 1200, traffic: 800 },
+  { time: "04:00", api: 800, traffic: 500 },
+  { time: "08:00", api: 4500, traffic: 3200 },
+  { time: "12:00", api: 8900, traffic: 6700 },
+  { time: "16:00", api: 6500, traffic: 4800 },
+  { time: "20:00", api: 3400, traffic: 2100 },
 ];
 
 export default function AdminDashboard() {
-  const [sensors, setSensors] = useState(INITIAL_SENSORS);
-  const [logs, setLogs] = useState(TELEMETRY_LOGS);
-
-  // Simulate realtime updates
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setSensors(prev => ({
-        ...prev,
-        temp: +(prev.temp + (Math.random() - 0.5) * 0.1).toFixed(2),
-        humidity: +(prev.humidity + (Math.random() - 0.5) * 0.2).toFixed(2),
-      }));
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
-
   return (
     <div className="space-y-12 max-w-[1600px] mx-auto stagger-in">
-      
-      {/* Strategic Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
         <div className="space-y-3">
           <div className="flex items-center gap-3">
             <div className="w-2 h-8 bg-purple-500 rounded-full shadow-[0_0_15px_rgba(168,85,247,0.5)]" />
-            <p className="text-[11px] font-black uppercase tracking-[0.4em] text-purple-500">Infrastructure Node: SYS-ROOT-01</p>
+            <p className="text-[11px] font-black uppercase tracking-[0.4em] text-purple-500">Root Access</p>
           </div>
-          <h1 className="text-7xl font-manrope font-extrabold tracking-tighter text-foreground leading-[0.8]">
-            System <span className="text-purple-500">Control Desk</span>
+          <h1 className="text-5xl font-manrope font-extrabold tracking-tighter text-foreground">
+            Platform <span className="text-purple-500">Operations</span>
           </h1>
-          <p className="text-lg text-text-soft font-medium max-w-2xl">
-             Universal oversight of platform IoT infrastructure and real-time sensor pipelines.
+          <p className="text-lg text-text-soft font-medium max-w-xl">
+             Realtime platform health and monitoring command center.
           </p>
-        </div>
-
-        <div className="flex gap-4">
-           <Button className="h-16 px-10 bg-purple-500 text-white rounded-2xl font-bold uppercase tracking-widest text-[11px] shadow-2xl shadow-purple-500/20 hover:scale-105 transition-all flex items-center gap-4">
-              <ShieldCheck size={20} /> System Audit
-           </Button>
-           <Button variant="outline" className="h-16 px-10 bg-white border-purple-500/10 rounded-2xl font-bold uppercase tracking-widest text-[11px] text-purple-500 hover:bg-surface-soft transition-all flex items-center gap-4 shadow-soft">
-              <Settings size={20} /> Global Config
-           </Button>
         </div>
       </div>
 
-      {/* Primary Telemetry KPIs */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
-         <SensorKPICard label="Cluster Temp" value={`${sensors.temp}°C`} icon={Thermometer} color="text-purple-500" bg="bg-white" />
-         <SensorKPICard label="Node Humidity" value={`${sensors.humidity}%`} icon={Droplets} color="text-blue-500" bg="bg-white" />
-         <SensorKPICard label="Fusion Load" value={sensors.soilValue} icon={Cpu} color="text-amber-600" bg="bg-white" sub="IoT Matrix" />
-         <SensorKPICard label="Global Status" value={sensors.soilStatus} icon={AlertTriangle} color="text-danger" bg="bg-white" pulsing={true} />
-         <SensorKPICard label="System Signal" value={sensors.ledStatus} icon={Zap} color="text-danger" bg="bg-white" glowing={true} />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+        <KPICard label="Total Platform Users" value="12,458" icon={Users} color="text-purple-500" />
+        <KPICard label="Active Realtime Sessions" value="1,284" icon={Activity} color="text-emerald-500" pulsing />
+        <KPICard label="Total Monitored Lands" value="8,742" icon={Globe} color="text-blue-500" />
+        <KPICard label="Platform Health" value="99.8%" icon={Server} color="text-emerald-500" />
+        <KPICard label="Total Claims Processed" value="4,852" icon={Database} color="text-amber-500" />
+        <KPICard label="Active GIS Zones" value="126" icon={Globe} color="text-indigo-500" />
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-10">
-         <div className="xl:col-span-8 space-y-10">
-            {/* NPK Intelligence */}
-            <div className="space-y-6">
-               <h2 className="text-[12px] font-black tracking-[0.4em] text-foreground uppercase">Infrastructure Data Fusion</h2>
-               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                  <NPKCard label="Nitrogen Stream" value={sensors.npk.n} status="Active" color="text-emerald-500" />
-                  <NPKCard label="Phosphorus Stream" value={sensors.npk.p} status="Stable" color="text-blue-500" />
-                  <NPKCard label="Potassium Stream" value={sensors.npk.k} status="Alert" color="text-rose-500" />
-               </div>
-            </div>
+        <div className="xl:col-span-6">
+          <div className="premium-card p-8 h-[400px]">
+            <h3 className="text-sm font-black uppercase tracking-widest text-text-soft mb-8">User Growth Trend</h3>
+            <ResponsiveContainer width="100%" height="80%">
+              <LineChart data={GROWTH_TREND}>
+                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#94A3B8" }} />
+                <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 40px -10px rgba(0,0,0,0.1)' }} />
+                <Line type="monotone" dataKey="users" stroke="#A855F7" strokeWidth={4} dot={{ r: 4, strokeWidth: 2 }} />
+                <Line type="monotone" dataKey="sessions" stroke="#10B981" strokeWidth={4} dot={{ r: 4, strokeWidth: 2 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
 
-            {/* Map */}
-            <div className="relative h-[500px] rounded-[32px] overflow-hidden bg-white border border-[#EEF2EE] shadow-soft group">
-               <ParcelMap parcels={[{ id: 1, name: "Global Infrastructure Node", area_ha: 0, crop: "SysOps", health: "100%", lat: 19.4, lng: 79.98 }]} height="100%" />
-            </div>
-         </div>
-
-         <div className="xl:col-span-4 flex flex-col gap-10">
-            {/* GPS Matrix */}
-            <div className="premium-card p-10 space-y-8">
-               <div className="flex items-center justify-between">
-                  <h3 className="text-[12px] font-black tracking-[0.4em] text-foreground uppercase">Universal GPS Matrix</h3>
-                  <Globe size={20} className="text-purple-500" />
-               </div>
-                     <div className="flex items-center gap-5 overflow-hidden">
-                        <div className="relative shrink-0">
-                           <div className="w-12 h-12 rounded-full bg-purple-500/10 border border-purple-500/20 flex items-center justify-center relative">
-                              <Satellite size={20} className="text-purple-500" />
-                           </div>
-                           <div className="absolute -inset-1 border-2 border-purple-500/20 rounded-full animate-ping" />
-                        </div>
-                        <div className="min-w-0">
-                           <p className="text-[8px] font-black text-text-soft uppercase tracking-widest leading-none mb-1 opacity-40">Matrix Uplink</p>
-                           <h4 className="text-base font-manrope font-extrabold text-foreground tracking-tight truncate">{sensors.gps.status}</h4>
-                        </div>
-                     </div>
-            </div>
-
-            {/* Live Console */}
-            <div className="premium-card p-10 flex-1 flex flex-col bg-[#0F172A] border-none text-white overflow-hidden">
-               <div className="flex items-center justify-between mb-8 text-[10px] font-black tracking-[0.3em] uppercase text-white/60">
-                  <div className="flex items-center gap-3">
-                     <Terminal size={16} className="text-purple-400" />
-                     <span>Root System Feed</span>
-                  </div>
-                  <div className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
-               </div>
-               <div className="flex-1 font-jetbrains text-[12px] space-y-4 overflow-y-auto">
-                  {logs.map((log, i) => (
-                     <div key={i} className="flex gap-4 opacity-80">
-                        <span className="text-purple-400/50">[{log.time}]</span>
-                        <span className={log.type === 'error' ? 'text-rose-400' : 'text-purple-300'}>{log.msg}</span>
-                     </div>
-                  ))}
-               </div>
-            </div>
-         </div>
+        <div className="xl:col-span-6">
+          <div className="premium-card p-8 h-[400px]">
+            <h3 className="text-sm font-black uppercase tracking-widest text-text-soft mb-8">System Load Analytics</h3>
+            <ResponsiveContainer width="100%" height="80%">
+              <AreaChart data={LOAD_DATA}>
+                <defs>
+                  <linearGradient id="colorApi" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#94A3B8" }} />
+                <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 40px -10px rgba(0,0,0,0.1)' }} />
+                <Area type="monotone" dataKey="api" stroke="#3B82F6" strokeWidth={4} fillOpacity={1} fill="url(#colorApi)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
       </div>
-    </div>
-  );
-}
 
-function SensorKPICard({ label, value, icon: Icon, color, sub, pulsing, glowing }: any) {
-  const isLong = value.toString().length > 8;
-  return (
-    <div className="premium-card p-7 flex flex-col justify-between h-full min-h-[200px]">
-      <div className={`w-10 h-10 rounded-xl bg-surface-soft flex items-center justify-center ${color} border border-border/50 relative shadow-sm`}>
-        <Icon size={18} />
-        {pulsing && <div className="absolute inset-0 border-2 border-current opacity-20 rounded-xl animate-ping" />}
-        {glowing && <div className="absolute inset-0 bg-current opacity-5 blur-xl rounded-xl animate-pulse" />}
-      </div>
-      <div className="space-y-1">
-        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-text-soft opacity-40 leading-none">{label}</p>
-        <div className="flex flex-col gap-0.5">
-           <h3 className={`font-jetbrains font-extrabold tracking-tighter text-foreground leading-tight ${isLong ? 'text-lg' : 'text-2xl'}`}>
-              {value}
-           </h3>
-           {sub && <span className="text-[8px] font-bold text-text-soft uppercase tracking-[0.2em] opacity-30">{sub}</span>}
+      <div className="space-y-6">
+        <h3 className="text-[12px] font-black uppercase tracking-[0.4em] text-foreground">Platform Distribution Matrix</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+           <DistributionCard role="Farmers" count="10,245" active="984" color="bg-emerald-50 text-emerald-600" border="border-emerald-500" />
+           <DistributionCard role="Field Officers" count="840" active="156" color="bg-blue-50 text-blue-600" border="border-blue-500" />
+           <DistributionCard role="Analysts" count="342" active="89" color="bg-amber-50 text-amber-600" border="border-amber-500" />
+           <DistributionCard role="Insurance Mgrs" count="124" active="42" color="bg-rose-50 text-rose-600" border="border-rose-500" />
+           <DistributionCard role="Govt Authorities" count="56" active="12" color="bg-indigo-50 text-indigo-600" border="border-indigo-500" />
         </div>
       </div>
     </div>
   );
 }
 
-function NPKCard({ label, value, status, color }: any) {
+function KPICard({ label, value, icon: Icon, color, pulsing }: any) {
+  return (
+    <div className="premium-card p-6 flex flex-col justify-between min-h-[140px]">
+      <div className="flex items-center justify-between mb-2">
+        <div className={`w-10 h-10 rounded-xl bg-surface-soft flex items-center justify-center ${color} relative`}>
+          <Icon size={18} />
+          {pulsing && <div className="absolute inset-0 border-2 border-current opacity-20 rounded-xl animate-ping" />}
+        </div>
+      </div>
+      <div>
+        <p className="text-[9px] font-black uppercase tracking-[0.2em] text-text-soft mb-1 line-clamp-1">{label}</p>
+        <h3 className="font-jetbrains font-extrabold tracking-tighter text-foreground text-2xl">{value}</h3>
+      </div>
+    </div>
+  );
+}
+
+function DistributionCard({ role, count, active, color, border }: any) {
    return (
-      <div className="premium-card p-7 flex flex-col justify-between min-h-[180px] group">
-         <div className="flex items-center justify-between">
-            <p className="text-[9px] font-black uppercase tracking-[0.3em] text-text-soft opacity-40">{label}</p>
-            <Database size={16} className={color} />
-         </div>
-         <div className="flex items-center gap-5 mt-3">
-            <div className="relative w-14 h-14 shrink-0">
-               <svg className="w-full h-full -rotate-90">
-                  <circle cx="28" cy="28" r="24" className="stroke-surface-soft fill-none" strokeWidth="5" />
-                  <motion.circle 
-                     initial={{ pathLength: 0 }}
-                     animate={{ pathLength: value / 100 }}
-                     transition={{ duration: 2, ease: "easeOut" }}
-                     cx="28" cy="28" r="24" 
-                     className={`stroke-current fill-none ${color}`} 
-                     strokeWidth="5" 
-                     strokeLinecap="round"
-                  />
-               </svg>
-               <div className="absolute inset-0 flex items-center justify-center font-jetbrains font-bold text-[9px]">
-                  {value}%
-               </div>
-            </div>
-            <div className="min-w-0 flex-1">
-               <p className="text-lg font-jetbrains font-extrabold text-foreground tracking-tight truncate leading-none">
-                  {value}<span className="text-[9px] ml-1 text-text-soft font-bold">mg/kg</span>
-               </p>
-               <p className={`text-[8px] font-black uppercase tracking-widest mt-1.5 ${color}`}>Status: {status}</p>
-            </div>
+      <div className={`premium-card p-6 border-b-4 hover:-translate-y-1 transition-transform ${border}`}>
+         <h4 className="text-sm font-black uppercase tracking-widest text-text-soft mb-4">{role}</h4>
+         <div className="space-y-2">
+            <div className="flex justify-between items-center"><span className="text-xs font-bold text-text-soft">Total Users</span><span className="font-jetbrains font-bold">{count}</span></div>
+            <div className="flex justify-between items-center"><span className="text-xs font-bold text-text-soft">Active Today</span><span className={`px-2 py-1 rounded-md text-[10px] font-black ${color}`}>{active} Online</span></div>
          </div>
       </div>
-   );
+   )
 }
