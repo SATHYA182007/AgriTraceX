@@ -2,26 +2,116 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: 120 15% 97.5%; /* #F7FAF7 */
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 142 76% 36%; /* #16A34A */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 148 48% 92%;
+    --secondary-foreground: 142 76% 36%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 142 71% 45%; /* #22C55E */
+    --accent-foreground: 222 47% 11%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214 32% 91%; /* #E5E7EB */
+    --input: 214 32% 91%;
+    --ring: 142 76% 36%;
+    --radius: 1.5rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-inter antialiased selection:bg-primary/10 selection:text-primary;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-manrope font-extrabold tracking-tight;
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-xl border border-[#EEF2EE] shadow-soft;
+  }
+
+  .glass-panel {
+    @apply bg-white/40 backdrop-blur-md border border-white/20 shadow-soft;
+  }
+
+  .premium-card {
+    @apply bg-white rounded-[24px] border border-[#EEF2EE] shadow-soft hover:-translate-y-1 transition-all duration-300;
+  }
+
+  .stagger-in > * {
+    @apply animate-in fade-in slide-in-from-bottom-6 duration-1000 fill-mode-both;
+  }
+
+  .stagger-in > *:nth-child(1) { animation-delay: 100ms; }
+  .stagger-in > *:nth-child(2) { animation-delay: 200ms; }
+  .stagger-in > *:nth-child(3) { animation-delay: 300ms; }
+  .stagger-in > *:nth-child(4) { animation-delay: 400ms; }
+  .stagger-in > *:nth-child(5) { animation-delay: 500ms; }
 }
 
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
+  .number-data {
+    @apply font-jetbrains tracking-tight;
   }
+
+  .grain {
+    position: relative;
+  }
+
+  .grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.02;
+    pointer-events: none;
+    background-image: url("https://grainy-gradients.vercel.app/noise.svg");
+    mix-blend-mode: multiply;
+    z-index: 1;
+  }
+
+  /* Leaflet map styles - AquaSmart Aesthetic */
+  .leaflet-container {
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 1 !important;
+    filter: saturate(0.8) contrast(0.9) brightness(1.05) !important; 
+    background-color: #F7FAF7 !important;
+    border-radius: 24px;
+  }
+
+  .leaflet-tile-pane {
+    opacity: 0.85;
+  }
+
+  .leaflet-popup-content-wrapper {
+    @apply glass-card rounded-2xl p-2 !important;
+  }
+
+  .leaflet-popup-tip {
+    @apply !bg-white/80 !backdrop-blur-xl !important;
+  }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 20s linear infinite;
 }
