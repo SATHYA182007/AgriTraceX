@@ -1,63 +1,129 @@
 import { NextRequest, NextResponse } from "next/server";
+import { retrieveContext } from "@/lib/knowledge";
 
-const SYSTEM_PROMPTS: Record<string, string> = {
-  farmer:
-    "You are the AgriTrace Intelligence Node. You provide tactical support to farmers in Sector 4. Help with: interpreting vegetation vigor (NDVI), optimizing irrigation cycles, managing tactical alerts, and identifying ground stressors. Your tone is professional, high-fidelity, and mission-oriented. Focus on 'Planetary Intelligence'.",
-  field_officer:
-    "You are the AgriTrace Tactical Oversight Node. You assist Field Agents in ground-truth verification. Help with: interpreting multispectral data, optimizing field routes, drafting verification logs, and identifying pathological hotspots. Be precise, technical, and data-driven.",
-  government:
-    "You are the AgriTrace Strategic Command Node. You provide regional oversight for state relief. Help with: district risk aggregation, fund allocation modeling, policy synchronization, and strategic audit generation. Focus on state-wide resilience and precision oversight.",
-  insurance:
-    "You are the AgriTrace Actuarial Node. You provide automated claim validation using fused telemetry. Help with: calculating loss ratios, verifying claim legitimacy against ground-truth data, and identifying fraudulent patterns. Be rigorous, financial, and analytical.",
-  super_admin:
-    "You are the AgriTrace Kernel Administrator. You manage the platform's planetary infrastructure. Help with: system health monitoring, authority tier management, RLS policy debugging, and realtime data flow optimization.",
-};
+const SYSTEM_PROMPT = `You are AgriTrace AI, an intelligent agricultural assistant built specifically for the AgriTrace X platform.
+
+You help farmers, analysts, insurance managers, field officers, government authorities, and administrators understand:
+- Agricultural intelligence and crop monitoring
+- GIS analytics and NDVI satellite data
+- IoT sensor readings and alerts
+- Land certification workflows
+- Insurance claims and payout processes
+- Government subsidy verification
+- Soil health and irrigation recommendations
+
+Use the retrieved knowledge base context below to give accurate, grounded answers.
+
+RETRIEVED CONTEXT:
+{CONTEXT}
+
+INSTRUCTIONS:
+- Answer using the context above when relevant
+- Use markdown formatting (bold, bullet points, numbered lists) for clarity
+- Keep answers concise and practical — 3-8 sentences or a short structured list
+- Be professional, helpful, and confident
+- Do NOT mention Claude, Gemini, or any underlying AI model — you are AgriTrace AI
+- If you don't know something specific, recommend contacting the platform admin or field officer`;
+
+// ── Google Gemini ──
+async function callGemini(systemPrompt: string, messages: any[]): Promise<string> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error("No GEMINI_API_KEY");
+
+  const { GoogleGenerativeAI } = await import("@google/generative-ai");
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const MODELS = ["gemini-2.0-flash", "gemini-1.5-pro", "gemini-pro"];
+  let lastError: any;
+
+  for (const modelName of MODELS) {
+    try {
+      const model = genAI.getGenerativeModel({ model: modelName });
+      const history = messages.slice(0, -1).map((m: any) => ({
+        role: m.role === "assistant" ? "model" : "user",
+        parts: [{ text: m.content }],
+      }));
+      const lastMsg = messages[messages.length - 1];
+      const chat = model.startChat({ history, systemInstruction: systemPrompt });
+      const result = await chat.sendMessage(lastMsg.content);
+      return result.response.text();
+    } catch (err: any) {
+      lastError = err;
+      console.log(`Gemini ${modelName} failed:`, err.message?.substring(0, 60));
+    }
+  }
+  throw lastError;
+}
+
+// ── Anthropic Claude (fallback) ──
+async function callAnthropic(systemPrompt: string, messages: any[]): Promise<string> {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) throw new Error("No ANTHROPIC_API_KEY");
+
+  const Anthropic = (await import("@anthropic-ai/sdk")).default;
+  const client = new Anthropic({ apiKey });
+
+  const formattedMessages = messages
+    .filter((m: any) => m.role === "user" || m.role === "assistant")
+    .map((m: any) => ({ role: m.role as "user" | "assistant", content: m.content }));
+
+  const response = await client.messages.create({
+    model: "claude-3-5-haiku-20241022",
+    max_tokens: 1024,
+    system: systemPrompt,
+    messages: formattedMessages,
+  });
+
+  return response.content[0].type === "text" ? response.content[0].text : "";
+}
+
+// ── Knowledge-base only fallback ──
+function buildFallbackResponse(question: string, chunks: any[]): string {
+  if (chunks.length === 0) {
+    return "I can help with farming questions, GIS analytics, insurance workflows, certifications, and platform guidance. Could you rephrase your question?";
+  }
+  const best = chunks[0];
+  return `**AgriTrace AI — Knowledge Base Answer**\n\n${best.content}\n\n*For more details, please consult your field officer or platform administrator.*`;
+}
 
 export async function POST(req: NextRequest) {
   try {
     const { messages, role } = await req.json();
 
-    const systemPrompt = SYSTEM_PROMPTS[role] || SYSTEM_PROMPTS["farmer"];
-
-    // Check if Anthropic API key is available
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) {
-      // Return a helpful demo response when no API key is configured
-      return NextResponse.json({
-        content: "AgriBot is running in demo mode. Configure `ANTHROPIC_API_KEY` in your `.env.local` to enable full AI responses. I can still guide you through the platform features!",
-      });
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
+      return NextResponse.json({ error: "Invalid request" }, { status: 400 });
     }
 
-    // Real Anthropic API call
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: "claude-3-5-sonnet-20240620",
-        max_tokens: 1024,
-        system: systemPrompt,
-        messages: messages.map((m: { role: string; content: string }) => ({
-          role: m.role,
-          content: m.content,
-        })),
-      }),
-    });
+    // Retrieve relevant context
+    const lastUserMessage = [...messages].reverse().find((m: any) => m.role === "user");
+    const question = lastUserMessage?.content || "";
+    const chunks = retrieveContext(question, 4);
+    const context = chunks.length > 0
+      ? chunks.map(c => `[${c.category.toUpperCase()}]\n${c.content}`).join("\n\n---\n\n")
+      : "Answer based on general agricultural and platform knowledge.";
 
-    if (!response.ok) {
-      const err = await response.text();
-      throw new Error(`Anthropic API error: ${err}`);
+    const systemPrompt = SYSTEM_PROMPT.replace("{CONTEXT}", context);
+
+    // Try Gemini → Anthropic → Knowledge base fallback
+    let content = "";
+
+    try {
+      content = await callGemini(systemPrompt, messages);
+    } catch (geminiErr: any) {
+      console.log("Gemini unavailable, trying Anthropic:", geminiErr.message);
+      try {
+        content = await callAnthropic(systemPrompt, messages);
+      } catch (anthropicErr: any) {
+        console.log("Anthropic unavailable, using knowledge base:", anthropicErr.message);
+        content = buildFallbackResponse(question, chunks);
+      }
     }
 
-    const data = await response.json();
-    const assistantContent = data.content?.[0]?.text ?? "Sorry, I could not generate a response.";
-
-    return NextResponse.json({ content: assistantContent });
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ content: `Error: ${message}` }, { status: 500 });
+    return NextResponse.json({ content });
+  } catch (error: any) {
+    console.error("Chat API error:", error);
+    return NextResponse.json(
+      { content: "AgriTrace AI encountered an issue. Please try again." },
+      { status: 200 }
+    );
   }
 }
